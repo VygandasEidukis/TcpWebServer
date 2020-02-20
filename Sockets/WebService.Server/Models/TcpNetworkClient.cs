@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace WebService.Server.Models
 {
@@ -12,7 +10,6 @@ namespace WebService.Server.Models
         public static ProcessRequest requestProcessor;
 
         private Socket _clientSocket;
-        private NetworkStream _dataStream;
         private StringBuilder recievedContent = new StringBuilder();
 
         private static readonly int bufferSize = 32;
@@ -82,25 +79,17 @@ namespace WebService.Server.Models
         {
             if (disposing)
             {
-                IDisposable dataStream = _dataStream;
-                if (dataStream != null)
+                Socket checkClientSocket = _clientSocket;
+                if (checkClientSocket != null)
                 {
-                    dataStream.Dispose();
-                }
-                else
-                {
-                    Socket checkClientSocket = _clientSocket;
-                    if (checkClientSocket != null)
+                    try
                     {
-                        try
-                        {
-                            checkClientSocket.Shutdown(SocketShutdown.Both);
-                        }
-                        finally
-                        {
-                            checkClientSocket.Close();
-                            _clientSocket = null;
-                        }
+                        checkClientSocket.Shutdown(SocketShutdown.Both);
+                    }
+                    finally
+                    {
+                        checkClientSocket.Close();
+                        _clientSocket = null;
                     }
                 }
                 GC.SuppressFinalize(this);

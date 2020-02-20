@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using WebService.Server.Exceptions;
 
 namespace WebService.Server.Models
@@ -19,7 +12,7 @@ namespace WebService.Server.Models
         public int _port { get; }
         private int _backlog { get; } = 5;
         private TcpNetworkListener _server { get; set; }
-        public string rootDirectory { get; set; }
+        public string rootDirectory { get; private set; }
 
         public Server(int port = 80, string rootDirectory = "./")
         {

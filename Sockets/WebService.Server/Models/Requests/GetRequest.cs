@@ -11,10 +11,12 @@ namespace WebService.Server.Models
         public HttpMethods ReqeustType { get; }
         public string Page { get; set; }
         private StringBuilder response { get; } = new StringBuilder();
+        private string rootDirectory;
 
-        public GetRequest(string Page, HttpMethods RequestType = HttpMethods.GET)
+        public GetRequest(string Page, string rootDirectory, HttpMethods RequestType = HttpMethods.GET)
         {
             this.ReqeustType = ReqeustType;
+            this.rootDirectory = rootDirectory;
             this.Page = Page;
             LinkToMainPage();
         }
@@ -27,14 +29,24 @@ namespace WebService.Server.Models
             }
         }
 
-        public string Process()
+        private string LinkRootWithPage()
+        {
+            if (rootDirectory[rootDirectory.Length - 1] != '/')
+                rootDirectory += "/";
+            var pageLink = rootDirectory + Page;
+            return pageLink;
+        }
+
+    public string Process()
         {
             try
             {
-                if(!File.Exists("./"+Page))
+                string pageLink = LinkRootWithPage();
+
+                if (!File.Exists(pageLink))
                     throw new HttpNotFoundException();
 
-                StreamReader file = new StreamReader("./" + Page);
+                StreamReader file = new StreamReader(pageLink);
                 string data = file.ReadLine();
                 while (data != null)
                 {

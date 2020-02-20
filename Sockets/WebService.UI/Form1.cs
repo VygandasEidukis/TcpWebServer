@@ -8,6 +8,7 @@ using System.Text;
 using WebService.Server.Models;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace WebService.UI
 {
@@ -26,31 +27,68 @@ namespace WebService.UI
         {
             if (!_serverRunning)
             {
-                server = new Server.Models.Server(Int32.Parse(tb_Port.Text), tb_RootPath.Text);
-                server.Start();
-                _serverRunning = true;
-
-                btn_ServerSwitch.Text = "Stop Server";
-
-                SwitchUIEnable();
+                ServerStarter();
             }
             else
             {
-                server.Dispose();
-                server = null;
+                server.Stop();
                 _serverRunning = false;
-
-                SwitchUIEnable();
             }
             SwitchUIEnable();
         }
 
+        private async void ServerStarter()
+        {
+            Task serverTask = new Task(() => StartServer());
+            serverTask.Start();
+            await serverTask.ContinueWith((x) => SwitchUIEnable());
+        }
+
+        private void StartServer()
+        {
+            try
+            {
+                server = new Server.Models.Server(Int32.Parse(tb_Port.Text), tb_RootPath.Text);
+                _serverRunning = true;
+                SwitchUIEnable();
+                server.Start();
+            }
+            catch (DirectoryNotFoundException ex)
+            {
+                MessageBox.Show("Bad root path");
+                _serverRunning = false; 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                _serverRunning = false;
+            }
+        }
+
         private void SwitchUIEnable()
         {
-            tb_Port.Enabled = !_serverRunning;
-            tb_RootPath.Enabled = !_serverRunning;
+            tb_Port.Invoke((MethodInvoker)delegate
+            {
+                tb_Port.Enabled = !_serverRunning;
+            });
 
-            btn_SelectRootPath.Enabled = !_serverRunning;
+            tb_RootPath.Invoke((MethodInvoker)delegate
+            {
+                tb_RootPath.Enabled = !_serverRunning;
+            });
+
+            btn_SelectRootPath.Invoke((MethodInvoker)delegate
+            {
+                btn_SelectRootPath.Enabled = !_serverRunning;
+            });
+
+            btn_ServerSwitch.Invoke((MethodInvoker)delegate
+            {
+                if (_serverRunning)
+                    btn_ServerSwitch.Text = "Stop Server";
+                if (!_serverRunning)
+                    btn_ServerSwitch.Text = "Start Server";
+            });
         }
 
         private void btn_SelectRootPath_Click(object sender, EventArgs e)

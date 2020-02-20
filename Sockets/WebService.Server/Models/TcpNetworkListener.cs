@@ -8,6 +8,8 @@ namespace WebService.Server.Models
 {
     public class TcpNetworkListener
     {
+        private bool _isServerDisposed = false;
+
         private IPEndPoint _serverEndpoint;
         private Socket _serverSocket;
         private bool _isSocketActive;
@@ -28,7 +30,6 @@ namespace WebService.Server.Models
 
         public void Start(int backlog)
         {
-
             _serverSocket.Bind(_serverEndpoint);
             try
             {
@@ -50,6 +51,7 @@ namespace WebService.Server.Models
                 _allDone.Set();
                 _serverSocket.BeginAccept(new AsyncCallback(ConnectionCallback), _serverSocket);
                 _allDone.Reset();
+                Thread.Sleep(10);
             }
         }
 
@@ -59,14 +61,22 @@ namespace WebService.Server.Models
             _allDone.Set();
 
             Socket listener = (Socket)asyncResult.AsyncState;
-            Socket handler = listener.EndAccept(asyncResult);
+            
+            if(!_isServerDisposed)
+            {
+                Socket handler = listener.EndAccept(asyncResult);
 
-            var client = new TcpNetworkClient(handler);
-
+                var client = new TcpNetworkClient(handler);
+            }            
         }
 
         public void Stop()
         {
+            if (this._isServerDisposed)
+                return;
+
+            _isServerDisposed = true;
+
             if (_serverSocket != null)
             {
                 _serverSocket.Close();

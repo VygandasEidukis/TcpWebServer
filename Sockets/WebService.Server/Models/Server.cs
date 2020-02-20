@@ -19,12 +19,18 @@ namespace WebService.Server.Models
         public int _port { get; }
         private int _backlog { get; } = 5;
         private TcpNetworkListener _server { get; set; }
-        public string rootPath { get; set; }
+        public string rootDirectory { get; set; }
 
-        public Server(int port = 80, string rootPath = "./")
+        public Server(int port = 80, string rootDirectory = "./")
         {
-            if (!Directory.Exists(rootPath) || rootPath != "./")
-                this.rootPath = rootPath;
+            if (!Directory.Exists(rootDirectory))
+            {
+                if(rootDirectory != "./")
+                    throw new DirectoryNotFoundException("Bad root directory");
+            }
+                
+
+            this.rootDirectory = rootDirectory;
             _port = port;
         }
 
@@ -43,11 +49,17 @@ namespace WebService.Server.Models
             }
         }
 
+        public void Stop()
+        {
+            _server.Stop();
+            this.Dispose();
+        }
+
         public string ProcessRequest(string request)
         {
             try
             {
-                IRequest requestMethod = RequestHandler.GetRequestType(request);
+                IRequest requestMethod = RequestHandler.GetRequestType(request, rootDirectory);
                 string requestResponse = "HTTP/1.1 200 OK\n\n";
                 requestResponse += requestMethod.Process();
                 return requestResponse;

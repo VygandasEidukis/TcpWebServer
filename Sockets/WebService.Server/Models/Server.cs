@@ -12,14 +12,19 @@ using WebService.Server.Exceptions;
 namespace WebService.Server.Models
 {
 
-    public class Server
+    public class Server : IDisposable
     {
+        private bool disposed = false;
+
         public int _port { get; }
         private int _backlog { get; } = 5;
         private TcpNetworkListener _server { get; set; }
+        public string rootPath { get; set; }
 
-        public Server(int port = 80)
+        public Server(int port = 80, string rootPath = "./")
         {
+            if (!Directory.Exists(rootPath) || rootPath != "./")
+                this.rootPath = rootPath;
             _port = port;
         }
 
@@ -56,6 +61,26 @@ namespace WebService.Server.Models
                 string errorMessage = $"HTTP/1.1 {exception.StatusCode} {exception.ShortDescription}\n\n {exception.Message}";
                 return errorMessage;
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                if(_server != null)
+                _server.Stop();
+            }
+
+            disposed = true;
         }
     }
 }

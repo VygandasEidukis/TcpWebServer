@@ -9,10 +9,10 @@ namespace WebService.Server.Models
     {
         private bool disposed = false;
 
-        public int _port { get; }
+        private int _port { get; }
         private int _backlog { get; } = 5;
         private TcpNetworkListener _server { get; set; }
-        public string rootDirectory { get; private set; }
+        private string _rootDirectory { get; set; }
 
         public Server(int port = 80, string rootDirectory = "./")
         {
@@ -23,7 +23,7 @@ namespace WebService.Server.Models
             }
                 
 
-            this.rootDirectory = rootDirectory;
+            this._rootDirectory = rootDirectory;
             _port = port;
         }
 
@@ -52,7 +52,7 @@ namespace WebService.Server.Models
         {
             try
             {
-                IRequest requestMethod = RequestHandler.GetRequestType(request, rootDirectory);
+                IRequest requestMethod = RequestHandler.GetRequestType(request, _rootDirectory);
                 string requestResponse = "HTTP/1.1 200 OK\n\n";
                 requestResponse += requestMethod.Process();
                 return requestResponse;

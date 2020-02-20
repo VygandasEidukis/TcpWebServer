@@ -10,7 +10,7 @@ namespace WebService.Server.Models
         public static ProcessRequest requestProcessor;
 
         private Socket _clientSocket;
-        private StringBuilder recievedContent = new StringBuilder();
+        private StringBuilder _recievedContent = new StringBuilder();
 
         private static readonly int bufferSize = 32;
         private byte[] buffer { get; set; } = new byte[bufferSize];
@@ -32,7 +32,7 @@ namespace WebService.Server.Models
             if (bytesRead > 0)
             {
                 string recievedBuffer = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                recievedContent.Append(recievedBuffer);
+                _recievedContent.Append(recievedBuffer);
 
                 if (_clientSocket.Available > 0)
                 {
@@ -47,7 +47,7 @@ namespace WebService.Server.Models
 
         private void DelegateResponse()
         {
-            string response = requestProcessor?.Invoke(recievedContent.ToString());
+            string response = requestProcessor?.Invoke(_recievedContent.ToString());
             Send(response);
         }
 
